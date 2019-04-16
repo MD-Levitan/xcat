@@ -86,6 +86,7 @@ async def detect_injections(context: 'AttackContext') -> List[Injection]:
     returner = []
 
     for injector in injectors:
+        print("Try following payload: " + injector.name)
         payloads = injector.test_payloads(working_value)
         result_futures = [
             check(context, test_payload)

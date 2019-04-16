@@ -39,6 +39,10 @@ def attack_options(func):
                   help='A file containing extra headers')
     @click.option('-b', '--body', required=False, type=click.File('rb'),
                   help='A file containing data to send in the request body')
+    @click.option('-d', '--data', required=False, type=utils.NegatableString(),
+                  help='Data string to be sent through POST (e.g. "id=1")')
+    @click.option('-v', '--verbose', required=False, type=utils.NegatableInt(),
+                  help='Verbosity level: 0-6 (default 1)')
     @click.option('-e', '--encode', default=Encoding.URL, type=utils.EnumType(Encoding),
                   help='Where to send the parameters (POST body or in the URL)')
     @click.option('-f', '--fast', is_flag=True, type=bool, default=False, show_default=True,
@@ -55,15 +59,23 @@ def attack_options(func):
                   help='Force disable features')
     @click.option('--oob', required=False,
                   help='IP:port to listen on for OOB attacks. This enables the OOB server.')
+    @click.option('--cookie', required=False, type=utils.NegatableString(),
+                  help='HTTP Cookie header value (e.g. "JSESSID=a88ea..")')  
+    @click.option('--proxy', required=False, type=utils.NegatableString(),
+                  help='Use a proxy to connect to the target URL')
     @click.argument('url')
     @click.argument('target_parameter')
     @click.argument('parameters', nargs=-1, type=utils.DictParameters())
     @click.pass_context
     @functools.wraps(func)
-    def wrapper(ctx, url, target_parameter, parameters, concurrency, fast, body, headers, method,
-                encode, true_string, true_code, enable, disable, oob, **kwargs):
+    def wrapper(ctx, url, target_parameter, parameters, concurrency, fast, body,
+                headers, method, data, verbose, cookie, proxy, encode, 
+                true_string, true_code, enable, disable, oob, **kwargs):
         if body and encode != 'url':
             ctx.fail('Can only use --body with url encoding')
+        
+        if body and data:
+            ctx.fail('Can use only --body or --data')
 
         if not true_code and not true_string:
             ctx.fail('--true-code or --true-string is required')
@@ -74,9 +86,10 @@ def attack_options(func):
         if target_parameter not in parameters:
             ctx.fail(f'target parameter {target_parameter} is not in the given list of parameters')
 
-        body_bytes = None
+        body_bytes = data
         if body:
             body_bytes = body.read()
+        
 
         context = AttackContext(
             url=url,
@@ -89,7 +102,8 @@ def attack_options(func):
             body=body_bytes,
             headers=headers,
             encoding=encode,
-            oob_details=oob
+            oob_details=oob,
+            proxy=proxy
         )
 
         if enable:
