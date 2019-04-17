@@ -108,8 +108,10 @@ async def check(context: AttackContext, payload: str):
         args = {'params': parameters, 'data': context.body}
     else:
         args = {'data': parameters}
-
     async with context.semaphore:
-        async with context.session.request(context.method, context.url, proxy=context.proxy, **args) as resp:
+        async with context.session.request(context.method, context.url, 
+                proxy=context.proxy if "http://" in context.proxy or 
+                                       "https://" in context.proxy 
+                                    else "http://" + context.proxy, **args) as resp:
             body = await resp.text()
             return context.match_function(resp.status, body)

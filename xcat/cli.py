@@ -39,8 +39,6 @@ def attack_options(func):
                   help='A file containing extra headers')
     @click.option('-b', '--body', required=False, type=click.File('rb'),
                   help='A file containing data to send in the request body')
-    @click.option('-d', '--data', required=False, type=utils.NegatableString(),
-                  help='Data string to be sent through POST (e.g. "id=1")')
     @click.option('-v', '--verbose', required=False, type=utils.NegatableInt(),
                   help='Verbosity level: 0-6 (default 1)')
     @click.option('-e', '--encode', default=Encoding.URL, type=utils.EnumType(Encoding),
@@ -61,7 +59,7 @@ def attack_options(func):
                   help='IP:port to listen on for OOB attacks. This enables the OOB server.')
     @click.option('--cookie', required=False, type=utils.NegatableString(),
                   help='HTTP Cookie header value (e.g. "JSESSID=a88ea..")')  
-    @click.option('--proxy', required=False, type=utils.NegatableString(),
+    @click.option('--proxy', required=False, type=str,
                   help='Use a proxy to connect to the target URL')
     @click.argument('url')
     @click.argument('target_parameter')
@@ -86,7 +84,7 @@ def attack_options(func):
         if target_parameter not in parameters:
             ctx.fail(f'target parameter {target_parameter} is not in the given list of parameters')
 
-        body_bytes = data
+        body_bytes = None #data.encode()
         if body:
             body_bytes = body.read()
         
